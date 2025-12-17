@@ -36,7 +36,7 @@ with st.form("seo_form"):
         search_depth = st.selectbox(
             "How deep should we check Google results?",
             options=[10, 20, 50, 100],
-            index=0,  # default: 50
+            index=0,  
             help="This is how many results we fetch from SerpAPI. "
                  "Your rank can be anywhere inside this range.",
         )
@@ -44,7 +44,7 @@ with st.form("seo_form"):
         gl = st.selectbox(
             "Google country (gl)",
             options=["in", "us", "gb", "ca", "au"],
-            index=0,  # default: India
+            index=0,  
             help="Choose the country you want results for.",
         )
 
@@ -57,12 +57,10 @@ if submitted:
         try:
             site_input_raw = site_input.strip()
 
-            # 1) Normalize domain for domain-level work / highlighting
+
             normalized_domain = normalize_target_domain(site_input_raw)
 
-            # 2) Build a URL candidate from the input (for URL-level rank)
-            #    - If they gave a full URL, use as-is
-            #    - If they gave a bare domain, assume https://domain/
+
             if site_input_raw.lower().startswith(("http://", "https://")):
                 url_candidate = site_input_raw
             else:
@@ -93,13 +91,12 @@ if submitted:
 
             col1, col2 = st.columns([1, 2])
 
-            # ========== LEFT SIDE: CLEAR RANK ANSWER ==========
             with col1:
                 st.subheader("🎯 Where is **your site** standing?")
 
                 st.markdown(f"**You entered:** `{site_input_raw}`")
 
-                # 1) URL-level ranking (what they literally typed, or https:// + that)
+
                 st.markdown("##### 1️⃣ Ranking of this URL")
                 if url_rank:
                     url_page = math.ceil(url_rank / 10)
@@ -117,7 +114,7 @@ if submitted:
 
                 st.markdown("---")
 
-                # 2) Domain-level ranking (all pages from that site)
+
                 st.markdown(f"##### 2️⃣ Ranking of the domain `{normalized_domain}`")
                 if domain_rank:
                     domain_page = math.ceil(domain_rank / 10)
@@ -140,14 +137,14 @@ if submitted:
                         f"No results from **{normalized_domain}** in the top {search_depth} results."
                     )
 
-            # ========== RIGHT SIDE: SERP CONTEXT ==========
+
             with col2:
                 st.subheader("🏆 Top 10 Results (for context)")
 
                 top10_rows = serp_rows[:10]
                 df = pd.DataFrame(top10_rows)
 
-                # Mark which rows are your site by domain
+
                 def mark_your_site(row_domain: str) -> str:
                     if (
                         row_domain == normalized_domain
@@ -169,7 +166,7 @@ if submitted:
                     f"but we searched top **{search_depth}** results for rank calculation."
                 )
 
-            # Full SERP (optional) with highlighting
+
             with st.expander(f"See all top {search_depth} results"):
                 full_df = pd.DataFrame(serp_rows)
                 full_df["is_your_site"] = full_df["domain"].apply(mark_your_site)
@@ -181,12 +178,10 @@ if submitted:
                     use_container_width=True,
                 )
 
-            # ========== SEO ANALYSIS SECTION ==========
+
             st.subheader("📊 On-page SEO metrics (you vs top 3)")
 
-            # pick best URL to analyze for you:
-            # 1) exact matched URL if found
-            # 2) else first domain URL
+
             target_url_for_analysis = None
             if matched_url:
                 target_url_for_analysis = matched_url
@@ -239,14 +234,9 @@ if submitted:
             else:
                 st.info("Could not analyze pages – maybe they failed to load.")
 
-            # ============================
-            # 🧠 Why your site is not on top
-            # ============================
 
-            # use domain_rank first, fall back to url_rank
             effective_rank = domain_rank if domain_rank else url_rank
 
-            # If rank exists and is in top 3 → don't show explanation
             if effective_rank and effective_rank <= 3:
                 st.subheader("🎉 Great news!")
                 st.success(

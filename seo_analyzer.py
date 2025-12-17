@@ -21,9 +21,6 @@ def fetch_page_html(url: str) -> str | None:
 
 
 def analyze_page(html: str | None, url: str, keyword: str) -> Dict[str, Any]:
-    """
-    Simple on-page SEO analysis for the given URL and keyword.
-    """
     keyword_lower = keyword.lower()
 
     if not html:
@@ -106,10 +103,6 @@ def analyze_page(html: str | None, url: str, keyword: str) -> Dict[str, Any]:
 
 
 def analyze_target_vs_top(keyword: str, target_url: str | None, top_urls: list[str]):
-    """
-    Fetch + analyze your page and the top URLs (usually top 3).
-    Returns dict: target_analysis, competitors (list).
-    """
     competitors = []
     for url in top_urls:
         html = fetch_page_html(url)

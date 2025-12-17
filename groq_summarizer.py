@@ -17,9 +17,6 @@ def _build_summary_prompt(
     serp_rows: list[Dict[str, Any]],
     analysis: Dict[str, Any],
 ) -> str:
-    """
-    Convert raw data into a compact prompt for the LLM.
-    """
     lines = []
     lines.append(f"Keyword: {keyword}")
     lines.append(f"Target domain: {domain}")
@@ -73,9 +70,6 @@ def summarize_with_groq(
     serp_rows: list[Dict[str, Any]],
     analysis: Dict[str, Any],
 ) -> str:
-    """
-    Use Groq LLM to generate a human-readable summary.
-    """
     if not GROQ_API_KEY:
         return (
             "GROQ_API_KEY is not set. Cannot generate AI summary. "
