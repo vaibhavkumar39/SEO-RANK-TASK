@@ -11,15 +11,11 @@ SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
 
 def get_serp_results(keyword: str, num_results: int = 50, gl: str = "us", hl: str = "en"):
-    """
-    Call SerpAPI to get Google search results for a keyword.
-    num_results can be up to 100 (SerpAPI limit for Google).
-    Returns list of organic_results.
-    """
+
     if not SERPAPI_API_KEY:
         raise RuntimeError("SERPAPI_API_KEY is not set in environment variables.")
 
-    # Clamp num_results between 10 and 100 for safety
+
     num_results = max(10, min(num_results, 100))
 
     params = {
@@ -38,9 +34,7 @@ def get_serp_results(keyword: str, num_results: int = 50, gl: str = "us", hl: st
 
 
 def extract_domain(url: str) -> str:
-    """
-    Extract plain domain like "example.com" from a URL.
-    """
+
     parsed = urlparse(url)
     host = parsed.netloc.lower()
     if host.startswith("www."):
@@ -49,21 +43,13 @@ def extract_domain(url: str) -> str:
 
 
 def normalize_target_domain(domain_or_url: str) -> str:
-    """
-    User might enter:
-      - example.com
-      - www.example.com
-      - https://www.example.com/path
-    This normalizes all of them to "example.com".
-    """
+
     text = domain_or_url.strip().lower()
 
-    # If it looks like a URL, parse it
+
     if text.startswith("http://") or text.startswith("https://"):
         return extract_domain(text)
 
-    # Otherwise treat it like a raw domain, strip any path
-    # e.g. "example.com/page" -> "example.com"
     if "/" in text:
         text = text.split("/", 1)[0]
 
@@ -74,12 +60,6 @@ def normalize_target_domain(domain_or_url: str) -> str:
 
 
 def find_domain_rank(organic_results, target_domain: str):
-    """
-    Returns (rank, url) where domain first appears across all results, or (None, None).
-
-    Rank uses the 'position' from SerpAPI, which corresponds to the
-    global ranking position (1-based) on Google.
-    """
     target_domain = normalize_target_domain(target_domain)
 
     found_position = None
@@ -93,9 +73,6 @@ def find_domain_rank(organic_results, target_domain: str):
 
         domain = extract_domain(link)
 
-        # Allow exact match or subdomain match:
-        #   target: example.com
-        #   match: example.com, blog.example.com, shop.example.com
         if domain == target_domain or domain.endswith("." + target_domain):
             found_position = position
             found_url = link
@@ -105,10 +82,6 @@ def find_domain_rank(organic_results, target_domain: str):
 
 
 def find_all_domain_positions(organic_results, target_domain: str):
-    """
-    Return ALL positions where this domain appears.
-    Each item: { position, url }.
-    """
     target_domain = normalize_target_domain(target_domain)
     hits = []
 
@@ -132,17 +105,10 @@ def find_all_domain_positions(organic_results, target_domain: str):
 
 
 def find_url_rank(organic_results, target_url: str):
-    """
-    Returns (rank, url) for the specific URL if present, otherwise (None, None).
 
-    Matching is done by normalizing trailing slash and checking equality
-    or startswith (in case of tracking params, etc.).
-    """
     target_url = target_url.strip()
     if not target_url:
         return None, None
-
-    # ensure scheme for fair comparison
     if target_url.startswith("www."):
         target_url = "https://" + target_url
     target_norm = target_url.rstrip("/")
@@ -166,9 +132,6 @@ def find_url_rank(organic_results, target_url: str):
 
 
 def normalize_serp_results(organic_results):
-    """
-    Returns a cleaned list of dicts: position, title, link, domain, snippet.
-    """
     cleaned = []
     for r in organic_results:
         link = r.get("link")
